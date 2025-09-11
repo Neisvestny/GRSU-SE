@@ -1,0 +1,14 @@
+C:\Programming\Csh\laba1\bin\Debug\net9.0\laba1.exe
+C:\Programming\Csh\laba1\bin\Debug\net9.0\laba1.deps.json
+C:\Programming\Csh\laba1\bin\Debug\net9.0\laba1.runtimeconfig.json
+C:\Programming\Csh\laba1\bin\Debug\net9.0\laba1.dll
+C:\Programming\Csh\laba1\bin\Debug\net9.0\laba1.pdb
+C:\Programming\Csh\laba1\obj\Debug\net9.0\laba1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Programming\Csh\laba1\obj\Debug\net9.0\laba1.AssemblyInfoInputs.cache
+C:\Programming\Csh\laba1\obj\Debug\net9.0\laba1.AssemblyInfo.cs
+C:\Programming\Csh\laba1\obj\Debug\net9.0\laba1.csproj.CoreCompileInputs.cache
+C:\Programming\Csh\laba1\obj\Debug\net9.0\laba1.dll
+C:\Programming\Csh\laba1\obj\Debug\net9.0\refint\laba1.dll
+C:\Programming\Csh\laba1\obj\Debug\net9.0\laba1.pdb
+C:\Programming\Csh\laba1\obj\Debug\net9.0\laba1.genruntimeconfig.cache
+C:\Programming\Csh\laba1\obj\Debug\net9.0\ref\laba1.dll
