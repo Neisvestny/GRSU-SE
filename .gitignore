@@ -1,0 +1,39 @@
+bin/
+!bin/x64/Debug/net9.0/Aeroport.png
+!bin/x64/Debug/net9.0/Aeroport.txt
+!bin/x64/Debug/net9.0/Podarok.png
+!bin/x64/Debug/net9.0/Podarok.txt
+
+obj/
+out/
+
+# Visual Studio Code
+.vscode/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Temporary files
+*.log
+*.tmp
+*.temp
+
+# Auto-generated files
+*.dbmdl
+*.cache
+*.pdb
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Other
+_ReSharper*/
+*.DotSettings
+*.swp
