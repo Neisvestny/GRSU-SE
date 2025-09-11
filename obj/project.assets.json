@@ -139,11 +139,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Programming\\Csh\\laba1\\laba1.csproj",
+      "projectUniqueName": "C:\\Programming\\Csh\\GRSU-SE\\laba1.csproj",
       "projectName": "laba1",
-      "projectPath": "C:\\Programming\\Csh\\laba1\\laba1.csproj",
+      "projectPath": "C:\\Programming\\Csh\\GRSU-SE\\laba1.csproj",
       "packagesPath": "C:\\Users\\neisv\\.nuget\\packages\\",
-      "outputPath": "C:\\Programming\\Csh\\laba1\\obj\\",
+      "outputPath": "C:\\Programming\\Csh\\GRSU-SE\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

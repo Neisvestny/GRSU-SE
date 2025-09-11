@@ -103,7 +103,7 @@ class Program
     static void Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        string path = "Aeroport";
+        string path = "Podarok";
         string text = GetText(path);
 
         var arrayColor = CountColors(text);
