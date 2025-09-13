@@ -50,7 +50,7 @@ class Program
 
             foreach (var kvp in ColorMap)
             {
-                if (Regex.IsMatch(word, $@"^{kvp.Key}(ый|ой|ая|ое|ую|ого|ые|их|им|еньк|овело)?$", RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(word, $@"^{kvp.Key}(?:еньк)?(ий|ый|ой|ая|ое|ую|ого|ые|их|им|овело)?$", RegexOptions.IgnoreCase))
                 {
                     Console.WriteLine(word);
                     coloredWords.Add(word);
