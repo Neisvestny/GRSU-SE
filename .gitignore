@@ -1,6 +1,5 @@
 bin/
-!bin/x64/Debug/net9.0/Aeroport.txt
-!bin/x64/Debug/net9.0/Podarok.txt
+!bin/x64/Debug/net9.0/*.txt
 
 obj/
 out/
