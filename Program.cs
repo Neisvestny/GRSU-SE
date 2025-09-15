@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿#pragma warning disable CA1416
+
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
 
@@ -72,32 +74,32 @@ class Program
         }
 
         int squareSize = 50;
-        int columns = (int)Math.Ceiling(Math.Sqrt(colors.Count));
-        int rows = (int)Math.Ceiling(colors.Count / (double)columns);
+        int gridSize = (int)Math.Ceiling(Math.Sqrt(colors.Count));
 
-        int width = columns * squareSize;
-        int height = rows * squareSize;
-
-        using (Bitmap bmp = new Bitmap(width, height))
-        using (Graphics g = Graphics.FromImage(bmp))
+        try
         {
-            g.Clear(Color.White);
+            using Bitmap bmp = new Bitmap(gridSize * squareSize, gridSize * squareSize);
+            using Graphics g = Graphics.FromImage(bmp);
 
             for (int i = 0; i < colors.Count; i++)
             {
-                int row = i / columns;
-                int col = i % columns;
+                int row = i / gridSize;
+                int col = i % gridSize;
 
-                Rectangle rect = new Rectangle(col * squareSize, row * squareSize, squareSize, squareSize);
-                using (Brush brush = new SolidBrush(colors[i]))
-                {
-                    g.FillRectangle(brush, rect);
-                }
+                using var brush = new SolidBrush(colors[i]);
+                g.FillRectangle(brush, col * squareSize, row * squareSize, squareSize, squareSize);
 
             }
 
             bmp.Save(outputFile + ".png", ImageFormat.Png);
+
+            Console.WriteLine("Изображение сохранено успешно!");
         }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Произошла ошибка при сохранении: {e.Message}");
+        }
+
     }
 
     static void Main(string[] args)
