@@ -33,13 +33,22 @@ class Program
         { "бирюз", Color.Turquoise },
     };
 
+    static (string Name, string FullPath)[] FindAllTxt()
+    {
+        string buildFolder = AppDomain.CurrentDomain.BaseDirectory;
+
+        return Directory.GetFiles(buildFolder, "*.txt", SearchOption.AllDirectories)
+                        .Select(path => (Path.GetFileNameWithoutExtension(path), path))
+                        .ToArray();
+    }
+
     static string GetText(string path)
     {
-        string text = File.ReadAllText(path + ".txt");
+        string text = File.ReadAllText(path);
         return text;
     }
 
-    static (List<string>, List<Color>) CountColors(string text)
+    static (List<string>, List<Color>) FindColors(string text)
     {
         var colors = new List<Color>();
         var coloredWords = new List<string>();
@@ -105,10 +114,36 @@ class Program
     static void Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        string path = "Podarok";
-        string text = GetText(path);
 
-        var arrayColor = CountColors(text);
-        DrawColors(arrayColor.Item2, path);
+        Console.WriteLine("Выберите файл, из которого хотите получить цвета: ");
+        var files = FindAllTxt();
+        for (int i = 0; i < files.Length; i++)
+        {
+            Console.WriteLine($"{i + 1}. {files[i].Name}");
+        }
+
+        int choice;
+        while (true)
+        {
+            Console.Write(">>> ");
+            string? input = Console.ReadLine();
+
+
+            if (int.TryParse(input, out choice) &&
+                choice >= 1 && choice <= files.Length)
+            {
+                break;
+            }
+
+            Console.WriteLine("Некорректный ввод. Введите число от 1 до " + files.Length);
+        }
+
+        var selectedFile = files[choice - 1];
+
+        Console.WriteLine($"Выбран файл: {selectedFile.Name}");
+
+        string text = GetText(selectedFile.FullPath);
+        var arrayColor = FindColors(text);
+        DrawColors(arrayColor.Item2, selectedFile.Name);
     }
 }
