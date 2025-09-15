@@ -2,6 +2,7 @@
 
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 class Program
@@ -55,19 +56,21 @@ class Program
 
         var words = Regex.Matches(text, @"\b[\p{IsCyrillic}a-zA-Z]+\b");
 
+        Console.WriteLine("Найденные цвета: ");
         foreach (Match wordMatch in words)
         {
             string word = wordMatch.Value.ToLower();
 
-            foreach (var kvp in ColorMap)
+            if (ColorMap.FirstOrDefault(
+                    kvp => Regex.IsMatch(
+                        word,
+                        $@"^{kvp.Key}(?:еньк)?(ий|ый|ой|ая|ое|ую|ого|ые|их|им|овело|окурые)?$",
+                        RegexOptions.IgnoreCase))
+                is var kvp && !kvp.Equals(default(KeyValuePair<string, Color>)))
             {
-                if (Regex.IsMatch(word, $@"^{kvp.Key}(?:еньк)?(ий|ый|ой|ая|ое|ую|ого|ые|их|им|овело)?$", RegexOptions.IgnoreCase))
-                {
-                    Console.WriteLine(word);
-                    coloredWords.Add(word);
-                    colors.Add(kvp.Value);
-                    break;
-                }
+                Console.WriteLine(word);
+                coloredWords.Add(word);
+                colors.Add(kvp.Value);
             }
         }
 
