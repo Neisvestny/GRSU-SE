@@ -1,7 +1,5 @@
 bin/
-!bin/x64/Debug/net9.0/Aeroport.png
 !bin/x64/Debug/net9.0/Aeroport.txt
-!bin/x64/Debug/net9.0/Podarok.png
 !bin/x64/Debug/net9.0/Podarok.txt
 
 obj/
