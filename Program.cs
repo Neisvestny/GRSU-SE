@@ -2,7 +2,6 @@
 
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 class Program
@@ -49,33 +48,33 @@ class Program
         return text;
     }
 
-    static (List<string>, List<Color>) FindColors(string text)
+    static (List<string> coloredWords, List<Color> colors) FindColors(string text)
     {
-        var colors = new List<Color>();
+        var colorsList = new List<Color>();
         var coloredWords = new List<string>();
 
-        var words = Regex.Matches(text, @"\b[\p{IsCyrillic}a-zA-Z]+\b");
+        var pattern = @"^(" + string.Join("|", ColorMap.Keys.Select(Regex.Escape)) +
+                      @")(?:еньк)?(ий|ый|ой|ая|ое|ую|ого|ые|их|им|овело|окурые)?$";
+        var colorRegex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        Console.WriteLine("Найденные цвета: ");
-        foreach (Match wordMatch in words)
+        foreach (Match wordMatch in Regex.Matches(text, @"\b[\p{IsCyrillic}a-zA-Z]+\b"))
         {
-            string word = wordMatch.Value.ToLower();
-
-            if (ColorMap.FirstOrDefault(
-                    kvp => Regex.IsMatch(
-                        word,
-                        $@"^{kvp.Key}(?:еньк)?(ий|ый|ой|ая|ое|ую|ого|ые|их|им|овело|окурые)?$",
-                        RegexOptions.IgnoreCase))
-                is var kvp && !kvp.Equals(default(KeyValuePair<string, Color>)))
+            var match = colorRegex.Match(wordMatch.Value);
+            if (match.Success)
             {
-                Console.WriteLine(word);
-                coloredWords.Add(word);
-                colors.Add(kvp.Value);
+                string key = match.Groups[1].Value;
+                string wordLower = wordMatch.Value.ToLower();
+
+                coloredWords.Add(wordLower);
+                colorsList.Add(ColorMap[key]);
+
+                Console.WriteLine(wordLower);
             }
         }
 
-        return (coloredWords, colors);
+        return (coloredWords, colorsList);
     }
+
 
     static void DrawColors(List<Color> colors, string outputFile = "colors")
     {
