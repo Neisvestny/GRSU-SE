@@ -1,6 +1,6 @@
-bin/
-!bin/x64/Debug/net9.0/*.txt
+content/genedata.*
 
+bin/
 obj/
 out/
 
