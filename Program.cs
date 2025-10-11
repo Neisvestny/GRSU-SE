@@ -1,151 +1,295 @@
-﻿#pragma warning disable CA1416
+﻿using System.Text;
 
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Text.RegularExpressions;
-
-class Program
+struct Sequence
 {
+    public string proteinName;
+    public string organismName;
+    public string proteinSequence;
+}
 
-    static Dictionary<string, Color> ColorMap = new(StringComparer.OrdinalIgnoreCase)
+struct Command
+{
+    public string commandName;
+    public string[] commandParameters;
+}
+
+static class Program
+{
+    public static string contentPath = "";
+    public static int filesID = 0;
+    public static int commandID = 1;
+    public static StringBuilder fileOutput = new StringBuilder();
+
+    static (string sequencesFilePath, string commandsFilePath) GetFilesDirectories()
     {
-        { "красн", Color.Red },
-        { "ал", Color.Crimson },
-        { "багр", Color.DarkRed },
-        { "зелен", Color.Green },
-        { "изумруд", Color.MediumSeaGreen },
-        { "малахит", Color.MediumSeaGreen },
-        { "син", Color.Blue },
-        { "голуб", Color.LightBlue },
-        { "лазур", Color.LightSkyBlue },
-        { "ультрамарин", Color.Blue },
-        { "желт", Color.Yellow },
-        { "золот", Color.Gold },
-        { "лимонн", Color.LemonChiffon },
-        { "бел", Color.White },
-        { "черн", Color.Black },
-        { "сер", Color.Gray },
-        { "фиолетов", Color.Purple },
-        { "лилов", Color.Purple },
-        { "оранжев", Color.Orange },
-        { "коричнев", Color.Brown },
-        { "розов", Color.Pink },
-        { "бирюз", Color.Turquoise },
-    };
+        contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\content");
+        string[] sequenceFiles = Directory.GetFiles(contentPath, "sequences*.txt");
 
-    static (string Name, string FullPath)[] FindAllTxt()
-    {
-        string buildFolder = AppDomain.CurrentDomain.BaseDirectory;
-
-        return Directory.GetFiles(buildFolder, "*.txt", SearchOption.AllDirectories)
-                        .Select(path => (Path.GetFileNameWithoutExtension(path), path))
-                        .ToArray();
-    }
-
-    static string GetText(string path)
-    {
-        string text = File.ReadAllText(path);
-        return text;
-    }
-
-    static (List<string> coloredWords, List<Color> colors) FindColors(string text)
-    {
-        var colorsList = new List<Color>();
-        var coloredWords = new List<string>();
-
-        var pattern = @"^(" + string.Join("|", ColorMap.Keys.Select(Regex.Escape)) +
-                      @")(?:еньк)?(ий|ый|ой|ая|ое|ую|ого|ые|их|им|овело|окурые)?$";
-        var colorRegex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-        foreach (Match wordMatch in Regex.Matches(text, @"\b[\p{IsCyrillic}a-zA-Z]+\b"))
+        if (sequenceFiles.Length == 0)
         {
-            var match = colorRegex.Match(wordMatch.Value);
-            if (match.Success)
-            {
-                string key = match.Groups[1].Value;
-                string wordLower = wordMatch.Value.ToLower();
-
-                coloredWords.Add(wordLower);
-                colorsList.Add(ColorMap[key]);
-
-                Console.WriteLine(wordLower);
-            }
+            Console.WriteLine("Not found any sequences files");
+            return (string.Empty, string.Empty);
         }
 
-        return (coloredWords, colorsList);
-    }
+        Console.WriteLine("Choose sequences file:");
+        for (int i = 0; i < sequenceFiles.Length; i++)
+            Console.WriteLine($"{i + 1}) {Path.GetFileNameWithoutExtension(sequenceFiles[i])}");
 
-
-    static void DrawColors(List<Color> colors, string outputFile = "colors")
-    {
-        if (colors.Count == 0)
-        {
-            Console.WriteLine("Нет цветов для отрисовки.");
-            return;
-        }
-
-        int squareSize = 50;
-        int gridSize = (int)Math.Ceiling(Math.Sqrt(colors.Count));
-
-        try
-        {
-            using Bitmap bmp = new Bitmap(gridSize * squareSize, gridSize * squareSize);
-            using Graphics g = Graphics.FromImage(bmp);
-
-            for (int i = 0; i < colors.Count; i++)
-            {
-                int row = i / gridSize;
-                int col = i % gridSize;
-
-                using var brush = new SolidBrush(colors[i]);
-                g.FillRectangle(brush, col * squareSize, row * squareSize, squareSize, squareSize);
-
-            }
-
-            bmp.Save(outputFile + ".png", ImageFormat.Png);
-
-            Console.WriteLine("Изображение сохранено успешно!");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Произошла ошибка при сохранении: {e.Message}");
-        }
-
-    }
-
-    static void Main(string[] args)
-    {
-        Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-        Console.WriteLine("Выберите файл, из которого хотите получить цвета: ");
-        var files = FindAllTxt();
-        for (int i = 0; i < files.Length; i++)
-        {
-            Console.WriteLine($"{i + 1}. {files[i].Name}");
-        }
-
-        int choice;
         while (true)
         {
             Console.Write(">>> ");
             string? input = Console.ReadLine();
 
-
-            if (int.TryParse(input, out choice) &&
-                choice >= 1 && choice <= files.Length)
+            if (int.TryParse(input, out filesID) &&
+                filesID >= 1 &&
+                filesID <= sequenceFiles.Length)
             {
+                filesID--;
                 break;
             }
 
-            Console.WriteLine("Некорректный ввод. Введите число от 1 до " + files.Length);
+            Console.WriteLine("Wrong input!");
         }
 
-        var selectedFile = files[choice - 1];
+        string sequencesFilePath = sequenceFiles[filesID];
+        string commandsFilePath = Path.Combine(contentPath, $"commands.{filesID}.txt");
 
-        Console.WriteLine($"Выбран файл: {selectedFile.Name}");
+        if (!File.Exists(commandsFilePath))
+        {
+            Console.WriteLine("No commands file for this sequences file!");
+            commandsFilePath = string.Empty;
+        }
 
-        string text = GetText(selectedFile.FullPath);
-        var arrayColor = FindColors(text);
-        DrawColors(arrayColor.Item2, selectedFile.Name);
+        return (sequencesFilePath, commandsFilePath);
+    }
+
+    static string DecodeRLESequence(string proteinSequence)
+    {
+        if (string.IsNullOrEmpty(proteinSequence))
+            return string.Empty;
+
+        var result = new StringBuilder();
+        int i = 0;
+
+        while (i < proteinSequence.Length)
+        {
+            if (char.IsDigit(proteinSequence[i]))
+            {
+                int start = i;
+                while (i < proteinSequence.Length && char.IsDigit(proteinSequence[i]))
+                    i++;
+
+                if (i >= proteinSequence.Length)
+                    throw new FormatException("RLE string ends with number but no character follows.");
+
+                int num = int.Parse(proteinSequence[start..i]);
+
+                result.Append(proteinSequence[i], num);
+                i++;
+            }
+            else
+            {
+                result.Append(proteinSequence[i]);
+                i++;
+            }
+        }
+
+        return result.ToString();
+    }
+
+    static (List<Sequence> sequences, List<Command> commands) GetFilesContent(
+        (string sequencesFilePath, string commandsFilePath) filesPaths)
+    {
+        var sequences = new List<Sequence>();
+        var commands = new List<Command>();
+
+        if (!File.Exists(filesPaths.sequencesFilePath))
+        {
+            Console.WriteLine($"Sequences file not found: {filesPaths.sequencesFilePath}");
+            return (sequences, commands);
+        }
+        if (!File.Exists(filesPaths.commandsFilePath))
+        {
+            Console.WriteLine($"Commands file not found: {filesPaths.commandsFilePath}");
+            return (sequences, commands);
+        }
+
+        foreach (var line in File.ReadLines(filesPaths.sequencesFilePath))
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var tokens = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length < 3)
+            {
+                Console.WriteLine($"Invalid sequence line skipped: {line}");
+                continue;
+            }
+
+            sequences.Add(new Sequence
+            {
+                proteinName = tokens[0],
+                organismName = tokens[1],
+                proteinSequence = DecodeRLESequence(tokens[2])
+            });
+        }
+
+        foreach (var line in File.ReadLines(filesPaths.commandsFilePath))
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var tokens = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length == 0)
+            {
+                Console.WriteLine($"Invalid command line skipped: {line}");
+                continue;
+            }
+
+            var cmd = new Command
+            {
+                commandName = tokens[0],
+                commandParameters = tokens.Skip(1).ToArray()
+            };
+
+            if (cmd.commandName.Equals("search", StringComparison.OrdinalIgnoreCase) &&
+                cmd.commandParameters.Length > 0)
+            {
+                cmd.commandParameters[0] = DecodeRLESequence(cmd.commandParameters[0]);
+            }
+
+            commands.Add(cmd);
+        }
+
+        return (sequences, commands);
+    }
+
+    static void AddCommandID(Command cmd, int paramCount)
+    {
+        var parameters = string.Join("   ", cmd.commandParameters);
+        fileOutput.Append($"{commandID:D3}   {cmd.commandName}   {parameters}\n");
+        commandID++;
+    }
+
+    static void CommandSearch(List<Sequence> sequences, Command cmd)
+    {
+        AddCommandID(cmd, 1);
+        var matches = sequences.Where(s => s.proteinSequence.Contains(cmd.commandParameters[0]));
+        fileOutput.Append("organism\t\t\t\t\tprotein\n");
+        if (matches.Any())
+            foreach (var s in matches)
+                fileOutput.Append($"{s.organismName}\t\t{s.proteinName}\n");
+        else
+            fileOutput.Append("NOT FOUND\n");
+    }
+
+    static void CommandDiff(List<Sequence> sequences, Command command)
+    {
+        AddCommandID(command, 2);
+        fileOutput.Append("amino-acids difference:\n");
+
+        var matchForFirstProteinName = sequences
+            .FirstOrDefault(sequence => sequence.proteinName.Contains(command.commandParameters[0]));
+
+        var matchForSecondProteinName = sequences
+            .FirstOrDefault(sequence => sequence.proteinName.Contains(command.commandParameters[1]));
+
+        if (matchForFirstProteinName.proteinName != null && matchForSecondProteinName.proteinName != null)
+        {
+            var longerSequence = matchForFirstProteinName;
+            var shorterSequence = matchForSecondProteinName;
+            if (longerSequence.proteinSequence.Length < matchForSecondProteinName.proteinSequence.Length)
+            {
+                longerSequence = matchForSecondProteinName;
+                shorterSequence = matchForFirstProteinName;
+            }
+
+            int replaceAmount = 0;
+            for (int i = 0; i < shorterSequence.proteinSequence.Length; i++)
+            {
+                if (shorterSequence.proteinSequence[i] != longerSequence.proteinSequence[i])
+                {
+                    replaceAmount++;
+                }
+            }
+
+            replaceAmount += (longerSequence.proteinSequence.Length - shorterSequence.proteinSequence.Length);
+
+            fileOutput.Append($"{replaceAmount}\n");
+        }
+        else
+        {
+            if (matchForFirstProteinName.proteinName == null)
+            {
+                fileOutput.Append($"MISSING:\t{matchForFirstProteinName.proteinName}\n");
+            }
+            else if (matchForSecondProteinName.proteinName == null)
+            {
+                fileOutput.Append($"MISSING:\t{matchForSecondProteinName.proteinName}\n");
+            }
+            else
+            {
+                fileOutput.Append($"MISSING:\t{matchForFirstProteinName.proteinName}\t{matchForSecondProteinName.proteinName}\n");
+            }
+        }
+    }
+
+    static void CommandMode(List<Sequence> sequences, Command cmd)
+    {
+        AddCommandID(cmd, 1);
+        fileOutput.Append("amino-acid occurs:\n");
+
+        var s = sequences.FirstOrDefault(x => x.proteinName.Contains(cmd.commandParameters[0]));
+        if (s.proteinName != null)
+        {
+            var res = s.proteinSequence
+                .GroupBy(c => c)
+                .Select(g => new { Key = g.Key, Count = g.Count() })
+                .OrderByDescending(p => p.Count)
+                .ThenBy(p => p.Key)
+                .First();
+            fileOutput.Append($"{res.Key}          {res.Count}\n");
+        }
+        else
+            fileOutput.Append($"MISSING: {cmd.commandParameters[0]}\n");
+    }
+
+    static void ExecutionOfCommands((List<Sequence> sequences, List<Command> commands) data)
+    {
+        foreach (var cmd in data.commands)
+        {
+            switch (cmd.commandName.ToLowerInvariant())
+            {
+                case "search":
+                    CommandSearch(data.sequences, cmd);
+                    break;
+
+                case "diff":
+                    CommandDiff(data.sequences, cmd);
+                    break;
+
+                case "mode":
+                    CommandMode(data.sequences, cmd);
+                    break;
+
+                default:
+                    fileOutput.Append($"Unknown command: {cmd.commandName}\n");
+                    break;
+            }
+
+            fileOutput.Append('-', 74).Append('\n');
+        }
+    }
+
+    static void Main()
+    {
+        Console.OutputEncoding = Encoding.UTF8;
+        var filesPaths = GetFilesDirectories();
+        var pair = GetFilesContent(filesPaths);
+
+        fileOutput.Append("Kishkunou Ruslan\nGenetic Searching\n" + new string('-', 74) + "\n");
+
+        ExecutionOfCommands(pair);
+
+        File.WriteAllText(Path.Combine(contentPath, $"genedata.{filesID}.txt"), fileOutput.ToString());
+        Console.WriteLine("File Saved!");
     }
 }
