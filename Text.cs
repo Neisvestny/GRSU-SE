@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace GRSU_SE
 {
@@ -14,31 +9,24 @@ namespace GRSU_SE
         [XmlElement("sentence")]
         public List<Sentence> Sentences { get; set; } = new List<Sentence>();
 
-        public Text() { }
+        public Text()
+        { }
 
         public Text(string input)
         {
-            var matches = Regex.Split(input, @"(?<=[.!?])\s+");
-            foreach (var sentenceText in matches)
-            {
-                if (!string.IsNullOrWhiteSpace(sentenceText))
-                    Sentences.Add(new Sentence(sentenceText.Trim()));
-            }
+            Sentences = Parser.ParseText(input).Sentences;
         }
 
-        // 1️⃣ Предложения по возрастанию количества слов
         public IEnumerable<Sentence> GetSentencesByWordCount()
         {
             return Sentences.OrderBy(s => s.WordCount);
         }
 
-        // 2️⃣ Предложения по возрастанию длины текста
         public IEnumerable<Sentence> GetSentencesByLength()
         {
-            return Sentences.OrderBy(s => s.RawText.Length);
+            return Sentences.OrderBy(s => s.ToString().Length);
         }
 
-        // 3️⃣ Слова заданной длины в вопросительных предложениях (без повторов)
         public IEnumerable<string> FindWordsInQuestionsByLength(int length)
         {
             return Sentences
@@ -49,24 +37,20 @@ namespace GRSU_SE
                 .Distinct();
         }
 
-        // 4️⃣ Удалить слова заданной длины, начинающиеся с согласной
         public void RemoveWordsByLengthStartingWithConsonant(int length)
         {
             string consonants = "бвгджзйклмнпрстфхцчшщbcdfghjklmnpqrstvwxyz";
 
             foreach (var sentence in Sentences)
             {
-                // Удаляем из Tokens слова, которые начинаются с согласной и имеют заданную длину
                 sentence.Tokens = sentence.Tokens
-                    .Where(t =>
-                        !(t is Word w &&
-                          w.Value.Length == length &&
-                          consonants.Contains(char.ToLower(w.Value[0]))))
+                    .Where(t => !(t is Word w &&
+                                 w.Value.Length == length &&
+                                 consonants.Contains(char.ToLower(w.Value[0]))))
                     .ToList();
             }
         }
 
-        // 5️⃣ В предложении заменить слова заданной длины на подстроку
         public void ReplaceWordsInSentence(int sentenceIndex, int wordLength, string replacement)
         {
             if (sentenceIndex < 0 || sentenceIndex >= Sentences.Count)
@@ -81,9 +65,11 @@ namespace GRSU_SE
             }
         }
 
-        // 6️⃣ Удалить стоп-слова (из файла)
         public void RemoveStopWords(string stopWordsFile)
         {
+            if (!File.Exists(stopWordsFile))
+                return;
+
             var stopWords = File.ReadAllLines(stopWordsFile)
                 .Select(w => w.Trim().ToLower())
                 .Where(w => !string.IsNullOrWhiteSpace(w))
@@ -96,14 +82,21 @@ namespace GRSU_SE
             }
         }
 
-        // 7️⃣ Экспорт в XML
         public string ExportToXml(string filePath)
         {
             try
             {
+                string directory = Path.GetDirectoryName(filePath);
+                if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
                 var serializer = new XmlSerializer(typeof(Text));
                 using (var writer = new StreamWriter(filePath))
+                {
                     serializer.Serialize(writer, this);
+                }
 
                 return $"Текст успешно экспортирован в XML-файл: {filePath}";
             }
@@ -116,6 +109,16 @@ namespace GRSU_SE
         public override string ToString()
         {
             return string.Join(" ", Sentences.Select(s => s.ToString()));
+        }
+
+        public string GetStatistics()
+        {
+            int totalWords = Sentences.Sum(s => s.WordCount);
+            int totalChars = ToString().Length;
+            int questionSentences = Sentences.Count(s => s.IsQuestion);
+
+            return $"Предложений: {Sentences.Count}, Слов: {totalWords}, Символов: {totalChars}\n" +
+                   $"Вопросительных предложений: {questionSentences}";
         }
     }
 }

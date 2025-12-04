@@ -1,5 +1,4 @@
-﻿using System;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace GRSU_SE
 {
@@ -7,9 +6,10 @@ namespace GRSU_SE
     public class Word
     {
         [XmlText]
-        public string Value { get; set; } // 🔧 теперь с set
+        public string Value { get; set; }
 
-        public Word() { }
+        public Word()
+        { }
 
         public Word(string value)
         {

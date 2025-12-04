@@ -1,5 +1,4 @@
-﻿using System;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace GRSU_SE
 {
@@ -7,9 +6,10 @@ namespace GRSU_SE
     public class Punctuation
     {
         [XmlText]
-        public string Symbol { get; set; } // 🔧 теперь с set
+        public string Symbol { get; set; }
 
-        public Punctuation() { }
+        public Punctuation()
+        { }
 
         public Punctuation(string symbol)
         {

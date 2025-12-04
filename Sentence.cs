@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace GRSU_SE
 {
@@ -11,28 +7,27 @@ namespace GRSU_SE
     {
         [XmlElement("word", typeof(Word))]
         [XmlElement("punctuation", typeof(Punctuation))]
-        public List<object> Tokens { get; set; } = new List<object>(); // 🔧 теперь с set
-        public Sentence() { }
+        public List<object> Tokens { get; set; } = new List<object>();
+
+        public Sentence()
+        { }
 
         public Sentence(string text)
         {
-            var matches = Regex.Matches(text, @"\w+|[^\w\s]");
-            foreach (Match match in matches)
-            {
-                if (Regex.IsMatch(match.Value, @"\w+"))
-                    Tokens.Add(new Word(match.Value));
-                else
-                    Tokens.Add(new Punctuation(match.Value));
-            }
+            Tokens = Parser.ParseSentenceTokens(text);
         }
+
         [XmlIgnore]
         public List<Word> Words => Tokens.OfType<Word>().ToList();
+
+        [XmlIgnore]
+        public List<Punctuation> Punctuations => Tokens.OfType<Punctuation>().ToList();
+
         [XmlIgnore]
         public int WordCount => Words.Count;
+
         [XmlIgnore]
-        public string RawText => ToString();
-        [XmlIgnore]
-        public bool IsQuestion => Tokens.OfType<Punctuation>().Any(p => p.Symbol == "?");
+        public bool IsQuestion => ToString().TrimEnd().EndsWith("?");
 
         public override string ToString()
         {
