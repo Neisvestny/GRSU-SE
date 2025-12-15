@@ -1,45 +1,42 @@
 ﻿using System.Xml.Serialization;
 
-namespace GRSU_SE
+[Serializable]
+public class Sentence
 {
-    [Serializable]
-    public class Sentence
+    [XmlElement(typeof(Word))]
+    [XmlElement(typeof(Punctuation))]
+    public List<object> Tokens { get; set; } = new List<object>();
+
+    public Sentence()
+    { }
+
+    public Sentence(string text)
     {
-        [XmlElement("word", typeof(Word))]
-        [XmlElement("punctuation", typeof(Punctuation))]
-        public List<object> Tokens { get; set; } = new List<object>();
+        Tokens = Parser.ParseSentenceTokens(text);
+    }
 
-        public Sentence()
-        { }
+    [XmlIgnore]
+    public List<Word> Words => Tokens.OfType<Word>().ToList();
 
-        public Sentence(string text)
+    [XmlIgnore]
+    public List<Punctuation> Punctuations => Tokens.OfType<Punctuation>().ToList();
+
+    [XmlIgnore]
+    public int WordCount => Words.Count;
+
+    [XmlIgnore]
+    public bool IsQuestion => ToString().TrimEnd().EndsWith("?");
+
+    public override string ToString()
+    {
+        string result = "";
+        foreach (var token in Tokens)
         {
-            Tokens = Parser.ParseSentenceTokens(text);
+            if (token is Word word)
+                result += word.Value + " ";
+            else if (token is Punctuation punct)
+                result = result.TrimEnd() + punct.Symbol + " ";
         }
-
-        [XmlIgnore]
-        public List<Word> Words => Tokens.OfType<Word>().ToList();
-
-        [XmlIgnore]
-        public List<Punctuation> Punctuations => Tokens.OfType<Punctuation>().ToList();
-
-        [XmlIgnore]
-        public int WordCount => Words.Count;
-
-        [XmlIgnore]
-        public bool IsQuestion => ToString().TrimEnd().EndsWith("?");
-
-        public override string ToString()
-        {
-            string result = "";
-            foreach (var token in Tokens)
-            {
-                if (token is Word word)
-                    result += word.Value + " ";
-                else if (token is Punctuation punct)
-                    result = result.TrimEnd() + punct.Symbol + " ";
-            }
-            return result.Trim();
-        }
+        return result.Trim();
     }
 }

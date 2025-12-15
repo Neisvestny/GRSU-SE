@@ -1,9 +1,8 @@
-﻿using GRSU_SE;
-using System.Text;
+﻿using System.Text;
 
 internal class Program
 {
-    private static void Main()
+    public static void Main()
     {
         Console.OutputEncoding = Encoding.UTF8;
         Console.InputEncoding = Encoding.UTF8;
@@ -49,6 +48,7 @@ internal class Program
         Console.WriteLine("6. После удаления стоп-слов:");
         text = new Text(input);
         text.RemoveStopWords("C:\\Programming\\Csh\\GRSU-SE\\content\\stopwords_ru.txt");
+        text.RemoveStopWords("C:\\Programming\\Csh\\GRSU-SE\\content\\stopwords_en.txt");
         Console.WriteLine(text);
         Console.WriteLine();
 

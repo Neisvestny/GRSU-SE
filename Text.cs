@@ -1,124 +1,121 @@
 ﻿using System.Xml.Serialization;
 
-namespace GRSU_SE
+[Serializable]
+[XmlRoot()]
+public class Text
 {
-    [Serializable]
-    [XmlRoot("text")]
-    public class Text
+    [XmlElement()]
+    public List<Sentence> Sentences { get; set; } = new List<Sentence>();
+
+    public Text()
+    { }
+
+    public Text(string input)
     {
-        [XmlElement("sentence")]
-        public List<Sentence> Sentences { get; set; } = new List<Sentence>();
+        Sentences = Parser.ParseText(input).Sentences;
+    }
 
-        public Text()
-        { }
+    public IEnumerable<Sentence> GetSentencesByWordCount()
+    {
+        return Sentences.OrderBy(s => s.WordCount);
+    }
 
-        public Text(string input)
+    public IEnumerable<Sentence> GetSentencesByLength()
+    {
+        return Sentences.OrderBy(s => s.ToString().Length);
+    }
+
+    public IEnumerable<string> FindWordsInQuestionsByLength(int length)
+    {
+        return Sentences
+            .Where(s => s.IsQuestion)
+            .SelectMany(s => s.Words)
+            .Select(w => w.Value.ToLower())
+            .Where(w => w.Length == length)
+            .Distinct();
+    }
+
+    public void RemoveWordsByLengthStartingWithConsonant(int length)
+    {
+        string consonants = "бвгджзйклмнпрстфхцчшщbcdfghjklmnpqrstvwxyz";
+
+        foreach (var sentence in Sentences)
         {
-            Sentences = Parser.ParseText(input).Sentences;
+            sentence.Tokens = sentence.Tokens
+                .Where(t => !(t is Word w &&
+                             w.Value.Length == length &&
+                             consonants.Contains(char.ToLower(w.Value[0]))))
+                .ToList();
         }
+    }
 
-        public IEnumerable<Sentence> GetSentencesByWordCount()
+    public void ReplaceWordsInSentence(int sentenceIndex, int wordLength, string replacement)
+    {
+        if (sentenceIndex < 0 || sentenceIndex >= Sentences.Count)
+            throw new ArgumentOutOfRangeException(nameof(sentenceIndex));
+
+        var sentence = Sentences[sentenceIndex];
+
+        for (int i = 0; i < sentence.Tokens.Count; i++)
         {
-            return Sentences.OrderBy(s => s.WordCount);
+            if (sentence.Tokens[i] is Word w && w.Value.Length == wordLength)
+                sentence.Tokens[i] = new Word(replacement);
         }
+    }
 
-        public IEnumerable<Sentence> GetSentencesByLength()
+    public void RemoveStopWords(string stopWordsFile)
+    {
+        if (!File.Exists(stopWordsFile))
+            return;
+
+        var stopWords = File.ReadAllLines(stopWordsFile)
+            .Select(w => w.Trim().ToLower())
+            .Where(w => !string.IsNullOrWhiteSpace(w))
+            .ToHashSet();
+
+        foreach (var sentence in Sentences)
         {
-            return Sentences.OrderBy(s => s.ToString().Length);
+            sentence.Tokens.RemoveAll(t =>
+                t is Word w && stopWords.Contains(w.Value.ToLower()));
         }
+    }
 
-        public IEnumerable<string> FindWordsInQuestionsByLength(int length)
+    public string ExportToXml(string filePath)
+    {
+        try
         {
-            return Sentences
-                .Where(s => s.IsQuestion)
-                .SelectMany(s => s.Words)
-                .Select(w => w.Value.ToLower())
-                .Where(w => w.Length == length)
-                .Distinct();
-        }
-
-        public void RemoveWordsByLengthStartingWithConsonant(int length)
-        {
-            string consonants = "бвгджзйклмнпрстфхцчшщbcdfghjklmnpqrstvwxyz";
-
-            foreach (var sentence in Sentences)
+            string directory = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
             {
-                sentence.Tokens = sentence.Tokens
-                    .Where(t => !(t is Word w &&
-                                 w.Value.Length == length &&
-                                 consonants.Contains(char.ToLower(w.Value[0]))))
-                    .ToList();
+                Directory.CreateDirectory(directory);
             }
-        }
 
-        public void ReplaceWordsInSentence(int sentenceIndex, int wordLength, string replacement)
-        {
-            if (sentenceIndex < 0 || sentenceIndex >= Sentences.Count)
-                throw new ArgumentOutOfRangeException(nameof(sentenceIndex));
-
-            var sentence = Sentences[sentenceIndex];
-
-            for (int i = 0; i < sentence.Tokens.Count; i++)
+            var serializer = new XmlSerializer(typeof(Text));
+            using (var writer = new StreamWriter(filePath))
             {
-                if (sentence.Tokens[i] is Word w && w.Value.Length == wordLength)
-                    sentence.Tokens[i] = new Word(replacement);
+                serializer.Serialize(writer, this);
             }
-        }
 
-        public void RemoveStopWords(string stopWordsFile)
+            return $"Текст успешно экспортирован в XML-файл: {filePath}";
+        }
+        catch (Exception ex)
         {
-            if (!File.Exists(stopWordsFile))
-                return;
-
-            var stopWords = File.ReadAllLines(stopWordsFile)
-                .Select(w => w.Trim().ToLower())
-                .Where(w => !string.IsNullOrWhiteSpace(w))
-                .ToHashSet();
-
-            foreach (var sentence in Sentences)
-            {
-                sentence.Tokens.RemoveAll(t =>
-                    t is Word w && stopWords.Contains(w.Value.ToLower()));
-            }
+            return $"Ошибка при экспорте в XML: {ex.Message}";
         }
+    }
 
-        public string ExportToXml(string filePath)
-        {
-            try
-            {
-                string directory = Path.GetDirectoryName(filePath);
-                if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+    public override string ToString()
+    {
+        return string.Join(" ", Sentences.Select(s => s.ToString()));
+    }
 
-                var serializer = new XmlSerializer(typeof(Text));
-                using (var writer = new StreamWriter(filePath))
-                {
-                    serializer.Serialize(writer, this);
-                }
+    public string GetStatistics()
+    {
+        int totalWords = Sentences.Sum(s => s.WordCount);
+        int totalChars = ToString().Length;
+        int questionSentences = Sentences.Count(s => s.IsQuestion);
 
-                return $"Текст успешно экспортирован в XML-файл: {filePath}";
-            }
-            catch (Exception ex)
-            {
-                return $"Ошибка при экспорте в XML: {ex.Message}";
-            }
-        }
-
-        public override string ToString()
-        {
-            return string.Join(" ", Sentences.Select(s => s.ToString()));
-        }
-
-        public string GetStatistics()
-        {
-            int totalWords = Sentences.Sum(s => s.WordCount);
-            int totalChars = ToString().Length;
-            int questionSentences = Sentences.Count(s => s.IsQuestion);
-
-            return $"Предложений: {Sentences.Count}, Слов: {totalWords}, Символов: {totalChars}\n" +
-                   $"Вопросительных предложений: {questionSentences}";
-        }
+        return $"Предложений: {Sentences.Count}, Слов: {totalWords}, Символов: {totalChars}\n" +
+               $"Вопросительных предложений: {questionSentences}";
     }
 }

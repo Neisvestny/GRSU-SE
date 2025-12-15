@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<text xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <sentence>
-    <word>Привет</word>
-    <punctuation>!</punctuation>
-  </sentence>
-  <sentence>
-    <word>твои</word>
-    <word>дела</word>
-    <punctuation>?</punctuation>
-  </sentence>
-  <sentence>
-    <word>тест</word>
-    <punctuation>.</punctuation>
-  </sentence>
-  <sentence>
-    <word>прекрасный</word>
-    <punctuation>!</punctuation>
-  </sentence>
-</text>
+<Text xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Sentences>
+    <Word>Привет</Word>
+    <Punctuation>!</Punctuation>
+  </Sentences>
+  <Sentences>
+    <Word>твои</Word>
+    <Word>дела</Word>
+    <Punctuation>?</Punctuation>
+  </Sentences>
+  <Sentences>
+    <Word>тест</Word>
+    <Punctuation>.</Punctuation>
+  </Sentences>
+  <Sentences>
+    <Word>прекрасный</Word>
+    <Punctuation>!</Punctuation>
+  </Sentences>
+</Text>
