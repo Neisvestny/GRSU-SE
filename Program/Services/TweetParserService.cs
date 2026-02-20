@@ -1,0 +1,76 @@
+using System.Text.RegularExpressions;
+using System.Globalization;
+
+public class TweetParserService {
+	private static readonly Regex TweetRegex = new(@"\[(?<lat>-?\d+(?:\.\d+)?),\s*(?<lon>-?\d+(?:\.\d+)?)\]\s+_\s+(?<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(?<text>.+)", RegexOptions.Compiled);
+	private readonly SentimentService _sentimentService;
+
+    public TweetParserService(SentimentService sentimentService)
+    {
+        _sentimentService = sentimentService;
+    }
+
+	public void ReadTxtFileFromContent()
+	{
+		string contentPath = Path.Combine(
+			AppDomain.CurrentDomain.BaseDirectory,
+			"..", "..", "..", "..", "Data"
+		);
+
+		contentPath = Path.GetFullPath(contentPath);
+
+		var sentiments = _sentimentService.LoadSentiments(contentPath);
+		Console.WriteLine($"Loaded {sentiments.Count}");
+
+		string[] txtFiles = Directory.GetFiles(contentPath, "*.txt");
+
+		Console.WriteLine("Choose file: ");
+		for (int i = 0; i < txtFiles.Length; i++)
+			Console.WriteLine($"{i + 1}) {Path.GetFileName(txtFiles[i])}");
+		
+		int fileIndex;
+		while (true)
+		{
+			Console.Write(">>> ");
+			string? input = Console.ReadLine();
+
+			if (int.TryParse(input, out fileIndex) &&
+				fileIndex >= 1 &&
+				fileIndex <= txtFiles.Length)
+			{
+				fileIndex--;
+				break;
+			}
+			Console.WriteLine("Invalid selection, try again.");
+		}
+
+		foreach (string line in File.ReadLines(txtFiles[fileIndex]))
+		{
+			Match match = TweetRegex.Match(line);
+
+			if (!match.Success)
+				continue;
+
+			double latitude = double.Parse(match.Groups["lat"].Value, CultureInfo.InvariantCulture);
+			double longitude = double.Parse(match.Groups["lon"].Value, CultureInfo.InvariantCulture);
+			DateTime timestamp = DateTime.Parse(match.Groups["date"].Value, CultureInfo.InvariantCulture);
+			string text = match.Groups["text"].Value;
+
+			double? weight = _sentimentService.CalculateWeight(text, sentiments);
+			var tweet = new Tweet(
+				new Coordinates(latitude, longitude),
+				timestamp,
+				text,
+				weight
+			);
+
+			Console.WriteLine("Tweet");
+			Console.WriteLine($"Text: {tweet.Text}");
+			Console.WriteLine($"Lat: {tweet.Coordinates.Latitude}");
+			Console.WriteLine($"Lon: {tweet.Coordinates.Longitude}");
+			Console.WriteLine($"Time: {tweet.Timestamp}");
+			Console.WriteLine($"Weight: {(weight.HasValue ? weight.Value : "None")}");
+			Console.WriteLine();
+		}
+	}
+}
