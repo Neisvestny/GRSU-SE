@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "oNyxsHokUTY=",
+  "success": true,
+  "projectFilePath": "/home/neisvestny/GRSU-SE/Program/Program.csproj",
+  "expectedPackageFiles": [
+    "/home/neisvestny/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.3/microsoft.aspnetcore.app.ref.10.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
