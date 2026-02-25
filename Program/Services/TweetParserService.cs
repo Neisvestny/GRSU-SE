@@ -10,8 +10,9 @@ public class TweetParserService {
         _sentimentService = sentimentService;
     }
 
-	public void ReadTxtFileFromContent()
+	public List<Tweet> ReadTxtFileFromContent()
 	{
+		var tweets = new List<Tweet>();
 		string contentPath = Path.Combine(
 			AppDomain.CurrentDomain.BaseDirectory,
 			"..", "..", "..", "..", "Data"
@@ -20,7 +21,7 @@ public class TweetParserService {
 		contentPath = Path.GetFullPath(contentPath);
 
 		var sentiments = _sentimentService.LoadSentiments(contentPath);
-		Console.WriteLine($"Loaded {sentiments.Count}");
+		// Console.WriteLine($"Loaded {sentiments.Count} sentiments");
 
 		string[] txtFiles = Directory.GetFiles(contentPath, "*.txt");
 
@@ -41,7 +42,7 @@ public class TweetParserService {
 				fileIndex--;
 				break;
 			}
-			Console.WriteLine("Invalid selection, try again.");
+			Console.WriteLine("Invalid selection, try again");
 		}
 
 		foreach (string line in File.ReadLines(txtFiles[fileIndex]))
@@ -64,13 +65,10 @@ public class TweetParserService {
 				weight
 			);
 
-			Console.WriteLine("Tweet");
-			Console.WriteLine($"Text: {tweet.Text}");
-			Console.WriteLine($"Lat: {tweet.Coordinates.Latitude}");
-			Console.WriteLine($"Lon: {tweet.Coordinates.Longitude}");
-			Console.WriteLine($"Time: {tweet.Timestamp}");
-			Console.WriteLine($"Weight: {(weight.HasValue ? weight.Value : "None")}");
-			Console.WriteLine();
+			tweets.Add(tweet);
+			// Console.WriteLine(tweet);
 		}
+
+		return tweets;
 	}
 }

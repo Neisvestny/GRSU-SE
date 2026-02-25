@@ -14,4 +14,9 @@ public class Tweet
         Text = text;
         Weight = weight;
     }
+
+	public override string ToString()
+	{
+		return $"Tweet\nText: {Text}\nLat: {Coordinates.Latitude}\nLon: {Coordinates.Longitude}\nTime: {Timestamp}\nWeight: {(Weight.HasValue ? Weight.Value : "None")}\n";
+	}
 }
