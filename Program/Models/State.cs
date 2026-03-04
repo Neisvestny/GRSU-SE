@@ -2,6 +2,7 @@ public class State
 {
 	public string Code { get; }
 	public Coordinates Center { get; }
+	public string Color { get; } = String.Empty; 
 
 	public State(string code, Coordinates center)
 	{

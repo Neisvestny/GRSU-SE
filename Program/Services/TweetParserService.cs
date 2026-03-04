@@ -22,6 +22,7 @@ public class TweetParserService {
 
 		var sentiments = _sentimentService.LoadSentiments(contentPath);
 		// Console.WriteLine($"Loaded {sentiments.Count} sentiments");
+		Tweet.InitializeSentiments(sentiments);
 
 		string[] txtFiles = Directory.GetFiles(contentPath, "*.txt");
 
@@ -57,13 +58,13 @@ public class TweetParserService {
 			DateTime timestamp = DateTime.Parse(match.Groups["date"].Value, CultureInfo.InvariantCulture);
 			string text = match.Groups["text"].Value;
 
-			double? weight = _sentimentService.CalculateWeight(text, sentiments);
 			var tweet = new Tweet(
 				new Coordinates(latitude, longitude),
 				timestamp,
-				text,
-				weight
+				text
 			);
+
+			tweet.CalculateWeight();
 
 			tweets.Add(tweet);
 			// Console.WriteLine(tweet);
