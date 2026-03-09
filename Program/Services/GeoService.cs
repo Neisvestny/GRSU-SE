@@ -11,9 +11,8 @@ public static class GeoService
         double lat2 = ToRadians(b.Latitude);
 
         double h =
-            Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-            Math.Cos(lat1) * Math.Cos(lat2) *
-            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+            Math.Sin(dLat / 2) * Math.Sin(dLat / 2)
+            + Math.Cos(lat1) * Math.Cos(lat2) * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
 
         double c = 2 * Math.Atan2(Math.Sqrt(h), Math.Sqrt(1 - h));
 

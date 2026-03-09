@@ -18,9 +18,7 @@ public class StateService
 
         foreach (var state in _states)
         {
-            double distance = GeoService.HaversineDistance(
-                tweet.Coordinates,
-                state.Center);
+            double distance = GeoService.HaversineDistance(tweet.Coordinates, state.Center);
 
             if (distance >= minDistance)
                 continue;
@@ -60,7 +58,8 @@ public class StateService
     }
 
     public IReadOnlyDictionary<string, double> CalculateAverageSentiments(
-        IReadOnlyDictionary<string, List<Tweet>> tweetsByState)
+        IReadOnlyDictionary<string, List<Tweet>> tweetsByState
+    )
     {
         if (tweetsByState == null)
             throw new ArgumentNullException(nameof(tweetsByState));
@@ -74,14 +73,14 @@ public class StateService
 
             foreach (var tweet in tweets)
             {
-                if (!tweet.Weight.HasValue) 
+                if (!tweet.Weight.HasValue)
                     continue;
 
                 sum += tweet.Weight.Value;
                 count++;
             }
 
-            if (count == 0) 
+            if (count == 0)
                 continue;
 
             _averageSentimentsCache[stateCode] = sum / count;

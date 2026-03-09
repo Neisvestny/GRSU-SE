@@ -63,10 +63,14 @@ public class SpatialIndex
         {
             foreach (var coord in polygon)
             {
-                if (coord.Latitude < minLat) minLat = coord.Latitude;
-                if (coord.Latitude > maxLat) maxLat = coord.Latitude;
-                if (coord.Longitude < minLon) minLon = coord.Longitude;
-                if (coord.Longitude > maxLon) maxLon = coord.Longitude;
+                if (coord.Latitude < minLat)
+                    minLat = coord.Latitude;
+                if (coord.Latitude > maxLat)
+                    maxLat = coord.Latitude;
+                if (coord.Longitude < minLon)
+                    minLon = coord.Longitude;
+                if (coord.Longitude > maxLon)
+                    maxLon = coord.Longitude;
             }
         }
 
@@ -90,10 +94,10 @@ public class SpatialIndex
 
         public bool Contains(Coordinates p)
         {
-            return p.Latitude >= MinLat &&
-                   p.Latitude <= MaxLat &&
-                   p.Longitude >= MinLon &&
-                   p.Longitude <= MaxLon;
+            return p.Latitude >= MinLat
+                && p.Latitude <= MaxLat
+                && p.Longitude >= MinLon
+                && p.Longitude <= MaxLon;
         }
     }
 }

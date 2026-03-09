@@ -1,37 +1,38 @@
-using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
-public class SentimentService {
-	private static readonly Regex CleanRegex = new(@"[^\w\s]", RegexOptions.Compiled);
+public class SentimentService
+{
+    private static readonly Regex CleanRegex = new(@"[^\w\s]", RegexOptions.Compiled);
 
-	public Dictionary<string, double> LoadSentiments(string contentPath)
-	{
-		string filePath = Path.Combine(contentPath, "sentiments.csv");
+    public Dictionary<string, double> LoadSentiments(string contentPath)
+    {
+        string filePath = Path.Combine(contentPath, "sentiments.csv");
 
-		if (!File.Exists(filePath))
-		{
-			Console.WriteLine("sentiments.csv not found!");
-			return new Dictionary<string, double>();
-		}
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine("sentiments.csv not found!");
+            return new Dictionary<string, double>();
+        }
 
-		var sentiments = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
-		
-		foreach (string line in File.ReadLines(filePath))
-		{
-			if (string.IsNullOrWhiteSpace(line))
-				continue;
+        var sentiments = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 
-			string[] parts = line.Split(',', 2);
+        foreach (string line in File.ReadLines(filePath))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
 
-			if (parts.Length != 2)
-				continue;
+            string[] parts = line.Split(',', 2);
 
-			string word = parts[0].Trim();
-			double value = double.Parse(parts[1], CultureInfo.InvariantCulture);
+            if (parts.Length != 2)
+                continue;
 
-			sentiments[word] = value;
-		}
+            string word = parts[0].Trim();
+            double value = double.Parse(parts[1], CultureInfo.InvariantCulture);
 
-		return sentiments;
-	}
+            sentiments[word] = value;
+        }
+
+        return sentiments;
+    }
 }

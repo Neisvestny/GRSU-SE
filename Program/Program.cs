@@ -1,11 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
-using SkiaSharp;
+﻿using System.Globalization;
 
 class Program
 {
@@ -28,28 +21,29 @@ class Program
             var sentimentService = new SentimentService();
             var parallelParser = new ParallelTweetParserService(sentimentService);
 
-            string dataPath = Path.GetFullPath(Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                "..", "..", "..", "..", "Data"
-            ));
+            string dataPath = Path.GetFullPath(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Data")
+            );
 
             var files = GetSortedTxtFiles(dataPath);
             string selectedFile = AskUserToChooseFile(files);
 
-            Console.WriteLine($"Начинаем параллельный парсинг файла: {Path.GetFileName(selectedFile)}");
+            Console.WriteLine(
+                $"Начинаем параллельный парсинг файла: {Path.GetFileName(selectedFile)}"
+            );
 
             List<Tweet> tweets = await parallelParser.ParseTweetsParallelAsync(selectedFile);
 
-            Console.WriteLine($"Загружено {tweets.Count} твитов за {stopwatch.Elapsed.TotalSeconds:F2} сек");
+            Console.WriteLine(
+                $"Загружено {tweets.Count} твитов за {stopwatch.Elapsed.TotalSeconds:F2} сек"
+            );
 
             var optimizedStateService = new OptimizedStateService(states);
             await optimizedStateService.AssignTweetsParallelAsync(tweets);
 
-            // освобождаем память
             tweets.Clear();
             tweets = null;
 
-            // один проход вместо 3
             double min = double.MaxValue;
             double max = double.MinValue;
             bool hasValues = false;
@@ -64,8 +58,10 @@ class Program
 
                 double value = avg.Value;
 
-                if (value < min) min = value;
-                if (value > max) max = value;
+                if (value < min)
+                    min = value;
+                if (value > max)
+                    max = value;
             }
 
             if (!hasValues)
@@ -74,22 +70,29 @@ class Program
                 return;
             }
 
-            // быстрее чем обычный Parallel.ForEach
-            Parallel.For(0, states.Count, i =>
-            {
-                var state = states[i];
-                var avg = state.GetAverageSentiment();
+            Parallel.For(
+                0,
+                states.Count,
+                i =>
+                {
+                    var state = states[i];
+                    var avg = state.GetAverageSentiment();
 
-                if (!avg.HasValue)
-                    return;
+                    if (!avg.HasValue)
+                        return;
 
-                var color = SentimentColorService.GetColor(avg.Value, min, max);
-                state.SetColor(color);
-            });
+                    var color = SentimentColorService.GetColor(avg.Value, min, max);
+                    state.SetColor(color);
+                }
+            );
 
             string mapOutputPath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
-                "..", "..", "..", "..", "Output",
+                "..",
+                "..",
+                "..",
+                "..",
+                "Output",
                 "us_states.png"
             );
 
@@ -130,9 +133,7 @@ class Program
             Console.Write(">>> ");
             string? input = Console.ReadLine();
 
-            if (int.TryParse(input, out int index) &&
-                index >= 1 &&
-                index <= files.Count)
+            if (int.TryParse(input, out int index) && index >= 1 && index <= files.Count)
             {
                 return files[index - 1];
             }

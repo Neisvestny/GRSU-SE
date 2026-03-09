@@ -34,7 +34,8 @@ public class OptimizedStateService
                         var state = _spatialIndex.FindClosestState(tweet.Coordinates);
                         state?.AddTweet(tweet);
                     }
-                });
+                }
+            );
         });
     }
 }

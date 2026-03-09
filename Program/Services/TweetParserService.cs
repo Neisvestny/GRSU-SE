@@ -1,5 +1,5 @@
-using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 public class TweetParserService
 {
@@ -15,10 +15,9 @@ public class TweetParserService
     {
         _sentimentService = sentimentService;
 
-        _dataPath = Path.GetFullPath(Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "..", "..", "..", "..", "Data"
-        ));
+        _dataPath = Path.GetFullPath(
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "Data")
+        );
 
         InitializeSentiments();
     }
@@ -29,7 +28,7 @@ public class TweetParserService
         string selectedFile = AskUserToChooseFile(files);
         return ParseTweets(selectedFile);
     }
-	
+
     private void InitializeSentiments()
     {
         var sentiments = _sentimentService.LoadSentiments(_dataPath);
@@ -59,9 +58,7 @@ public class TweetParserService
             Console.Write(">>> ");
             string? input = Console.ReadLine();
 
-            if (int.TryParse(input, out int index) &&
-                index >= 1 &&
-                index <= files.Count)
+            if (int.TryParse(input, out int index) && index >= 1 && index <= files.Count)
             {
                 return files[index - 1];
             }
@@ -81,15 +78,17 @@ public class TweetParserService
                 continue;
 
             double latitude = double.Parse(match.Groups["lat"].Value, CultureInfo.InvariantCulture);
-            double longitude = double.Parse(match.Groups["lon"].Value, CultureInfo.InvariantCulture);
-            DateTime timestamp = DateTime.Parse(match.Groups["date"].Value, CultureInfo.InvariantCulture);
+            double longitude = double.Parse(
+                match.Groups["lon"].Value,
+                CultureInfo.InvariantCulture
+            );
+            DateTime timestamp = DateTime.Parse(
+                match.Groups["date"].Value,
+                CultureInfo.InvariantCulture
+            );
             string text = match.Groups["text"].Value;
 
-            var tweet = new Tweet(
-                new Coordinates(latitude, longitude),
-                timestamp,
-                text
-            );
+            var tweet = new Tweet(new Coordinates(latitude, longitude), timestamp, text);
 
             tweet.CalculateWeight();
             tweets.Add(tweet);
