@@ -1,4 +1,4 @@
-public sealed class Coordinates
+public struct Coordinates
 {
     public double Latitude { get; }
     public double Longitude { get; }
@@ -7,5 +7,10 @@ public sealed class Coordinates
     {
         Latitude = latitude;
         Longitude = longitude;
+    }
+
+    public double DistanceTo(Coordinates other)
+    {
+        return GeoService.HaversineDistance(this, other);
     }
 }

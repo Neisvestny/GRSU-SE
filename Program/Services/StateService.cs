@@ -1,18 +1,20 @@
 public class StateService
 {
     private readonly List<State> _states;
-    private readonly Dictionary<string, double> _averageSentimentsCache;
+    private readonly Dictionary<string, double> _averageSentimentsCache = new();
 
-    public StateService(List<State> states)
+    public StateService(IEnumerable<State> states)
     {
-        _states = states;
-        _averageSentimentsCache = new Dictionary<string, double>();
+        _states = states?.ToList() ?? throw new ArgumentNullException(nameof(states));
     }
 
-    public string? GetClosestState(Tweet tweet)
+    public State? GetClosestState(Tweet tweet)
     {
+        if (tweet == null)
+            throw new ArgumentNullException(nameof(tweet));
+
         double minDistance = double.MaxValue;
-        string? closestState = null;
+        State? closestState = null;
 
         foreach (var state in _states)
         {
@@ -20,52 +22,80 @@ public class StateService
                 tweet.Coordinates,
                 state.Center);
 
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-                closestState = state.Code;
-            }
+            if (distance >= minDistance)
+                continue;
+
+            minDistance = distance;
+            closestState = state;
         }
 
         return closestState;
     }
 
-    public Dictionary<string, List<Tweet>> GroupTweetsByState(List<Tweet> tweets)
+    public Dictionary<string, List<Tweet>> GroupTweetsByState(IEnumerable<Tweet> tweets)
     {
+        if (tweets == null)
+            throw new ArgumentNullException(nameof(tweets));
+
         var result = new Dictionary<string, List<Tweet>>();
-        
+
         foreach (var tweet in tweets)
         {
-            string? stateCode = GetClosestState(tweet);
-            if (stateCode == null) continue;
-            
-            if (!result.ContainsKey(stateCode))
-                result[stateCode] = new List<Tweet>();
-                
-            result[stateCode].Add(tweet);
+            var state = GetClosestState(tweet);
+            if (state is null)
+                continue;
+
+            var stateCode = state.Code;
+
+            if (!result.TryGetValue(stateCode, out var list))
+            {
+                list = new List<Tweet>();
+                result[stateCode] = list;
+            }
+
+            list.Add(tweet);
         }
-        
+
         return result;
     }
 
-	public Dictionary<string, double> CalculateAverageSentiments(
-		Dictionary<string, List<Tweet>> tweetsByState)
-	{
-		var result = new Dictionary<string, double>();
-		_averageSentimentsCache.Clear();
+    public IReadOnlyDictionary<string, double> CalculateAverageSentiments(
+        IReadOnlyDictionary<string, List<Tweet>> tweetsByState)
+    {
+        if (tweetsByState == null)
+            throw new ArgumentNullException(nameof(tweetsByState));
 
-		foreach (var (stateCode, tweets) in tweetsByState)
-		{
-			var validTweets = tweets.Where(t => t.Weight.HasValue);
-			
-			if (!validTweets.Any())
-				continue;
+        _averageSentimentsCache.Clear();
 
-			double average = validTweets.Average(t => t.Weight!.Value);
-			result[stateCode] = average;
-			_averageSentimentsCache[stateCode] = average;
-		}
+        foreach (var (stateCode, tweets) in tweetsByState)
+        {
+            double sum = 0;
+            int count = 0;
 
-		return result;
-	}
+            foreach (var tweet in tweets)
+            {
+                if (!tweet.Weight.HasValue) 
+                    continue;
+
+                sum += tweet.Weight.Value;
+                count++;
+            }
+
+            if (count == 0) 
+                continue;
+
+            _averageSentimentsCache[stateCode] = sum / count;
+        }
+
+        return _averageSentimentsCache;
+    }
+
+    public void AssignTweets(IEnumerable<Tweet> tweets)
+    {
+        foreach (var tweet in tweets)
+        {
+            var state = GetClosestState(tweet);
+            state?.AddTweet(tweet);
+        }
+    }
 }
